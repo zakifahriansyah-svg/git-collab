@@ -1,5 +1,8 @@
-nama_penjenguk,nama_pasien,jam_besuk,status
-Gina Dwi,Ayudia Hastari,08.15,Disetujui
-Fitri Hungawe,Cannice Jiihana,09.00,Disetujui
-Tuti Calirsa,Gibran Syarif,09.00,Disetujui
-Kamila Indriana,Nadine Viviene,10.30,Disetujui
+id,nama_penjenguk,nama_pasien,jam_besuk,status
+1,Gina Dwi,Ayudia Hastari,08.15,Ditolak
+2,Fitri Hungawe,Cannice Jiihana,09.32,Disetujui
+3,Tuti Calirsa,Gibran Syarif,09.21,Disetujui
+4,Kamila Indriana,Nadine Viviene,10.35,Disetujui
+5,hui,sheldon,08.00,Ditolak
+6,Adit Penyelamat,Sheldon,10.20,Disetujui
+7,Sai,Sheldon,10.23,Ditolak

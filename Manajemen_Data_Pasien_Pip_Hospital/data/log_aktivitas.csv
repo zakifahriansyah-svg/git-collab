@@ -1,2 +1,10 @@
-timestamp,user,aktivitas
-
+waktu,aksi,role
+27/11/2025 15:49,Edit pasien ID 1: Kendrick Mui,admin
+27/11/2025 15:49,Hapus pasien: Setiawan Aji,admin
+27/11/2025 16:09,Menolak kunjungan: Kamila Indriana untuk Nadine Viviene,admin
+27/11/2025 16:18,Melihat daftar pasien,user
+27/11/2025 16:19,Mengajukan kunjungan untuk sheldon,user
+27/11/2025 19:39,Menolak kunjungan: hui untuk sheldon,admin
+27/11/2025 19:47,Melihat daftar pasien,user
+27/11/2025 19:47,Melihat daftar pasien,user
+27/11/2025 19:48,Melihat daftar pasien,user

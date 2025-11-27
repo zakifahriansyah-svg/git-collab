@@ -1,32 +1,32 @@
-import os
-import sys
-import time
-import pandas as pd
+import os # Untuk membersihkan terminal
+import sys # Untuk mengubah runtime
+import time # Untuk jeda waktu
+import pandas as pd # Untuk manipulasi data
 from InquirerPy import inquirer
-from tabulate import tabulate
-import re
-from colorama import init, Fore, Style
+from tabulate import tabulate # Untuk tabel
+import re 
+from colorama import init, Fore, Style # Untuk mewarnai teks
+from datetime import datetime # Untuk menambahkan tanggal, bulan, dan haari
 
 init(autoreset=True)
 
 dataDIR = 'data'
 dfPasien = f'{dataDIR}/pasien.csv'
 dfPermohonan = f'{dataDIR}/permohonan_kunjungan.csv'
+dfLog = f'{dataDIR}/log_aktivitas.csv'
 
-def clear():
+def clear(): # Membersihkan terminal
     os.system('cls || clear')
 
 def loading(teks="Memuat"):
     sys.stdout.write(f"\n{teks}")
-    for _ in range(3):
-        time.sleep(0.3)
+    for _ in range(5):
+        time.sleep(0.5)
         sys.stdout.write(".")
         sys.stdout.flush()
     print()
 
 def baca_pasien():
-    if not os.path.exists(dfPasien):
-        return pd.DataFrame()
     df = pd.read_csv(dfPasien, dtype=str)
 
     for col in df.columns:
@@ -35,8 +35,6 @@ def baca_pasien():
     return df
 
 def baca_permohonan():
-    if not os.path.exists(dfPermohonan):
-        return pd.DataFrame()
     df = pd.read_csv(dfPermohonan, dtype=str)
 
     for col in df.columns:
@@ -44,7 +42,13 @@ def baca_permohonan():
 
     return df
 
-#LIHAT DATA PASIEN
+def tambah_log(aksi, role="user"):
+    log_df = pd.read_csv(dfLog)
+    waktu = datetime.now().strftime("%d/%m/%Y %H:%M")
+    log_baru = pd.DataFrame([{"waktu": waktu, "aksi": aksi, "role": role}])
+    log_df = pd.concat([log_df, log_baru], ignore_index=True)
+    log_df.to_csv(dfLog, index=False)
+
 def lihat_data_pasien():
     clear()
     print("=" * 62)
@@ -52,18 +56,15 @@ def lihat_data_pasien():
     print("=" * 62)
 
     df = baca_pasien()
-
-    if df.empty:
-        print(f"{Fore.RED}Tidak ada data pasien.{Style.RESET_ALL}")
-        return input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
-
     df_display = df[['id', 'nama', 'ruangan', 'status_kunjungan']].copy()
 
-    original_headers = list(df_display.columns)
-    blue_headers = [f"{Fore.BLUE}{h}{Style.RESET_ALL}" for h in original_headers]
+    headers = list(df_display.columns)
+    headers_biru = [f"{Fore.BLUE}{h}{Style.RESET_ALL}" for h in headers]
 
-    print(tabulate(df_display, headers=blue_headers, tablefmt="rounded_grid", showindex=False))
-    input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
+    print(tabulate(df_display, headers=headers_biru, tablefmt="rounded_grid", showindex=False))
+    tambah_log("Melihat daftar pasien")
+
+    input(f"\n{Fore.YELLOW}Tekan enter untuk melanjutkan...{Style.RESET_ALL}")
 
 def ajukan_permohonan():
     clear()
@@ -83,12 +84,9 @@ def ajukan_permohonan():
             break
         print(f"{Fore.RED}Nama pasien tidak boleh kosong!{Style.RESET_ALL}")
 
-    # Regex format HH.MM
     pattern_jam = r"^(?:[01]\d|2[0-3])\.[0-5]\d$"
-
     while True:
         jam = inquirer.text(message="Rencana Jam Besuk (cth: 09.00):").execute().strip()
-
         if re.match(pattern_jam, jam):
             break
         print(f"{Fore.RED}Format jam harus HH.MM (contoh 09.00)!{Style.RESET_ALL}")
@@ -97,21 +95,30 @@ def ajukan_permohonan():
 
     df = baca_permohonan()
 
-    newData = {
+    if "id" not in df.columns:
+        df["id"] = []
+
+    if df.empty or df["id"].isnull().all():
+        new_id = 1
+    else:
+        max_id = pd.to_numeric(df["id"], errors="coerce").max()
+        new_id = int(max_id) + 1 if pd.notna(max_id) else 1
+
+    data_baru = {
+        "id": new_id,
         "nama_penjenguk": nama,
         "nama_pasien": pasien,
         "jam_besuk": jam,
         "status": "Menunggu"
     }
 
-    df = pd.concat([df, pd.DataFrame([newData])], ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([data_baru])], ignore_index=True)
     df.to_csv(dfPermohonan, index=False)
+    tambah_log(f"Mengajukan kunjungan untuk {pasien}")
 
     print(f"{Fore.GREEN}Permohonan Anda telah dikirim dengan status 'Menunggu'{Style.RESET_ALL}")
-    print("   Silakan cek status secara berkala.")
-    input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
+    input(f"\n{Fore.YELLOW}Tekan enter untuk melanjutkan...{Style.RESET_ALL}")
 
-#CEK STATUS PERMOHONAN
 def cek_status_permohonan():
     clear()
     print("=" * 65)
@@ -121,19 +128,14 @@ def cek_status_permohonan():
     nama = inquirer.text(message="Masukkan nama penjenguk:").execute()
     df = baca_permohonan()
 
-    if df.empty:
-        print(f"{Fore.YELLOW}Belum ada data permohonan.{Style.RESET_ALL}")
-        return input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
-
     loading("Mencari data")
 
     hasil = df[df["nama_penjenguk"].str.lower().str.contains(nama.lower())]
 
     if hasil.empty:
         print(f"{Fore.RED}Tidak ditemukan data untuk '{nama}'.{Style.RESET_ALL}")
-        return input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
+        return input(f"\n{Fore.YELLOW}Tekan enter untuk melanjutkan...{Style.RESET_ALL}")
 
-    # Format warna status
     def format_status(s):
         if s.lower() == "pending":
             return f"{Fore.YELLOW}{s}{Style.RESET_ALL}"
@@ -145,14 +147,12 @@ def cek_status_permohonan():
     hasil = hasil.copy()
     hasil["status"] = hasil["status"].apply(format_status)
 
-    original_headers = list(hasil.columns)
-    blue_headers = [f"{Fore.BLUE}{h}{Style.RESET_ALL}" for h in original_headers]
+    headers = list(hasil.columns)
+    headers_biru = [f"{Fore.BLUE}{h}{Style.RESET_ALL}" for h in headers]
 
-    print(tabulate(hasil, headers=blue_headers, tablefmt="rounded_grid", showindex=False))
-    input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
+    print(tabulate(hasil, headers=headers_biru, tablefmt="rounded_grid", showindex=False, disable_numparse=True))
+    input(f"\n{Fore.YELLOW}Tekan enter untuk melanjutkan...{Style.RESET_ALL}")
 
-
-# MENU USER
 def main_menu():
     while True:
         clear()
@@ -166,8 +166,10 @@ def main_menu():
                 "1. Lihat Data Pasien",
                 "2. Ajukan Permohonan Kunjungan",
                 "3. Cek Status Kunjungan",
-                "4. Keluar"
+                "4. Kembali ke menu utama"
             ],
+            pointer="➡️ ",
+            qmark=""
         ).execute()
 
         pilih = pilihan.split(".")[0]
@@ -179,11 +181,4 @@ def main_menu():
         elif pilih == "3":
             cek_status_permohonan()
         elif pilih == "4":
-            print(f"{Fore.BLUE}Terima kasih telah menggunakan sistem.{Style.RESET_ALL}")
             break
-
-if __name__ == "__main__":
-    try:
-        main_menu()
-    except KeyboardInterrupt:
-        print(f"\n{Fore.YELLOW}Program dihentikan.{Style.RESET_ALL}")

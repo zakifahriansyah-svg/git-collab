@@ -1,11 +1,11 @@
-import os
-import pandas as pd
-from colorama import Fore, Style, init
-from datetime import datetime
-from tabulate import tabulate
+import os # Untuk membersihkan terminal
+import pandas as pd # Untuk manipulasi data
+from colorama import Fore, Style, init # Mewarnai teks
+from datetime import datetime # Untuk menambahkan tanggal, bulan, dan hari
+from tabulate import tabulate # Untuk tabel
 from InquirerPy import inquirer
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+import matplotlib.pyplot as plt # Untuk menampilkan grafik
+import matplotlib.dates as mdates # Untuk menambahkan tanggal, bulan, dan hari pada grafik
 init(autoreset=True)
 
 dataDIR = 'data'     
@@ -17,11 +17,10 @@ def clear():
     os.system('cls || clear')
 
 def baca_pasien():
-    df = pd.read_csv(dfPasien, dtype=str)  # Baca semua sebagai string dulu
+    df = pd.read_csv(dfPasien, dtype=str)  
     if df.empty:
         return df
 
-    # Konversi kolom 'id' ke integer (gunakan Int64 agar aman jika ada NaN)
     df['id'] = pd.to_numeric(df['id'], errors='coerce').astype('Int64')
     return df
 
@@ -140,7 +139,6 @@ def tambah_pasien():
         print("Tambah Pasien Baru".center(50))
         print("="*50)
 
-        # Input nama (wajib)
         while True:
             nama = input("Nama pasien: ").strip()
             if nama:
@@ -148,7 +146,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Data tidak boleh kosong." + Style.RESET_ALL)
         
-        # Input BPJS (wajib, harus angka, dan unik jika diisi)
         while True:
             bpjs = input("Nomor BPJS: ").strip()
             if not bpjs:
@@ -157,13 +154,11 @@ def tambah_pasien():
             if not bpjs.isdigit():
                 print(Fore.RED + "Nomor BPJS harus berupa angka." + Style.RESET_ALL)
                 continue
-            # Cek keunikan
             if not df.empty and bpjs in df['bpjs'].values:
                 print(Fore.RED + f"Nomor BPJS '{bpjs}' sudah terdaftar! Gunakan nomor lain." + Style.RESET_ALL)
                 continue
             break
 
-        # Input umur (harus angka)
         while True:
             umur = input("Umur: ").strip()
             if umur.isdigit():
@@ -171,7 +166,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Umur harus berisi angka. Silakan coba lagi." + Style.RESET_ALL)
 
-        # Input jenis kelamin (pilih L/P)
         jk = inquirer.select(
             message="Jenis kelamin:",
             choices=["L", "P"],
@@ -179,7 +173,6 @@ def tambah_pasien():
             qmark=""
         ).execute()
 
-        # Input penyakit (wajib)
         while True:
             penyakit = input("Penyakit: ").strip()
             if penyakit:
@@ -187,7 +180,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Data tidak boleh kosong." + Style.RESET_ALL)
 
-        # Input tanggal masuk (wajib, harus format DD MMM YYYY)
         while True:
             tgl_masuk = input("Tanggal masuk (contoh: 10 Nov 2025): ").strip()
             if not tgl_masuk:
@@ -198,7 +190,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Format tanggal masuk salah! Contoh yang benar: 10 Nov 2025" + Style.RESET_ALL)
 
-        # Input tanggal keluar (boleh tanggal atau "-", tidak boleh kosong/format salah)
         while True:
             tgl_keluar = input("Tanggal keluar (contoh: 15 Nov 2025 atau -): ").strip()
             if not tgl_keluar:
@@ -209,7 +200,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Format tanggal keluar salah! Contoh: 15 Nov 2025 atau '-'" + Style.RESET_ALL)
 
-        # Input dokter (wajib)
         while True:
             dokter = input("Dokter: ").strip()
             if dokter:
@@ -217,7 +207,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Data tidak boleh kosong." + Style.RESET_ALL)
 
-        # Input ruangan (wajib)
         while True:
             ruangan = input("Ruangan: ").strip()
             if ruangan:
@@ -225,7 +214,6 @@ def tambah_pasien():
             else:
                 print(Fore.RED + "Data tidak boleh kosong." + Style.RESET_ALL)
 
-        # Input status kunjungan
         status = inquirer.select(
             message="Status kunjungan:",
             choices=["Ada", "Tidak ada"],
@@ -233,13 +221,11 @@ def tambah_pasien():
             qmark=""
         ).execute()
 
-        # Generate ID baru
-        new_id = df["id"].astype(int).max() + 1 if not df.empty else 1
+        id_baru = df["id"].astype(int).max() + 1 if not df.empty else 1
 
-        # Buat data baru — termasuk bpjs
-        new_row = {
-            "id": new_id,
-            "bpjs": bpjs,  # ✅ Simpan BPJS
+        baris_baru = {
+            "id": id_baru,
+            "bpjs": bpjs,  
             "nama": nama,
             "umur": int(umur),
             "jenis_kelamin": jk,
@@ -251,7 +237,7 @@ def tambah_pasien():
             "status_kunjungan": status
         }
 
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        df = pd.concat([df, pd.DataFrame([baris_baru])], ignore_index=True)
         simpan_pasien(df)
         tambah_log(f"Menambah pasien: {nama}")
         print(Fore.GREEN + f"\nPasien {nama} berhasil ditambahkan!" + Style.RESET_ALL)
@@ -263,7 +249,6 @@ def tambah_pasien():
     clear()
 
 def validasi_tanggal_csv(tgl_str):
-    """Validasi apakah string tanggal sesuai format 'DD MMM YYYY' atau '-'."""
     if tgl_str == "-":
         return True
     try:
@@ -334,7 +319,6 @@ def edit_pasien():
         input(Fore.YELLOW + "Tekan enter untuk melanjutkan..." + Style.RESET_ALL)
         return
 
-    # Validasi Tanggal Masuk
     while True:
         tgl_masuk_baru = input(f"Tanggal masuk (contoh: 10 Nov 2025) [{data_lama['tgl_masuk']}]: ").strip() or data_lama['tgl_masuk']
         if not tgl_masuk_baru:
@@ -411,10 +395,8 @@ def hapus_pasien():
     nama = df[df["id"] == id_hapus]["nama"].values[0]
 
     if inquirer.confirm(f"Hapus {nama}", default=False).execute():
-        # Hapus baris dengan ID tertentu
         df = df[df["id"] != id_hapus].reset_index(drop=True)
 
-        # Reset ulang kolom 'id' agar berurutan dari 1
         df["id"] = range(1, len(df) + 1)
 
         simpan_pasien(df)
@@ -438,22 +420,17 @@ def lihat_log():
 def tampilkan_grafik_pasien():
     df = baca_pasien()
 
-    # Konversi kolom tanggal ke format datetime
     df["tgl_masuk_parsed"] = pd.to_datetime(df["tgl_masuk"], format="%d %b %Y", errors="coerce")
 
-    # Hitung jumlah pasien per hari
     df["tanggal"] = df["tgl_masuk_parsed"].dt.date
     daily_counts = df["tanggal"].value_counts().sort_index()
 
-    # Ambil tanggal dan jumlah pasien
     dates = pd.to_datetime(daily_counts.index)
     counts = daily_counts.values
 
-    # Buat grafik
     plt.figure(figsize=(10, 6))
     plt.plot(dates, counts, marker='o', linestyle='-', linewidth=2)
 
-    # Format sumbu X agar menampilkan "DD MMM YYYY"
     plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d %b %Y'))
     plt.xticks(rotation=45)
 
