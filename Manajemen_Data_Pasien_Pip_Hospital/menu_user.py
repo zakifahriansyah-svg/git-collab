@@ -112,6 +112,9 @@ def ajukan_permohonan():
     input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
 
 #CEK STATUS PERMOHONAN
+# ... (kode impor dan fungsi lain tetap sama)
+
+# CEK STATUS PERMOHONAN
 def cek_status_permohonan():
     clear()
     print("=" * 65)
@@ -148,9 +151,13 @@ def cek_status_permohonan():
     original_headers = list(hasil.columns)
     blue_headers = [f"{Fore.BLUE}{h}{Style.RESET_ALL}" for h in original_headers]
 
-    print(tabulate(hasil, headers=blue_headers, tablefmt="rounded_grid", showindex=False))
+    # PERBAIKAN DI SINI: disable_numparse=True
+    # Ini mencegah tabulate mengubah "09.00" menjadi angka 9
+    print(tabulate(hasil, headers=blue_headers, tablefmt="rounded_grid", showindex=False, disable_numparse=True))
+    
     input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
 
+# ... (main menu dan sisa kode tetap sama)
 
 # MENU USER
 def main_menu():
@@ -181,3 +188,9 @@ def main_menu():
         elif pilih == "4":
             print(f"{Fore.BLUE}Terima kasih telah menggunakan sistem.{Style.RESET_ALL}")
             break
+
+if __name__ == "__main__":
+    try:
+        main_menu()
+    except KeyboardInterrupt:
+        print(f"\n{Fore.BLUE}Terima kasih telah menggunakan sistem.{Style.RESET_ALL}")
