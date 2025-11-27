@@ -83,7 +83,7 @@ def ajukan_permohonan():
             break
         print(f"{Fore.RED}Nama pasien tidak boleh kosong!{Style.RESET_ALL}")
 
-    # Regex format HH.MM
+    #format HH.MM
     pattern_jam = r"^(?:[01]\d|2[0-3])\.[0-5]\d$"
 
     while True:
@@ -110,9 +110,6 @@ def ajukan_permohonan():
     print(f"{Fore.GREEN}Permohonan Anda telah dikirim dengan status 'Menunggu'{Style.RESET_ALL}")
     print("   Silakan cek status secara berkala.")
     input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
-
-#CEK STATUS PERMOHONAN
-# ... (kode impor dan fungsi lain tetap sama)
 
 # CEK STATUS PERMOHONAN
 def cek_status_permohonan():
@@ -151,13 +148,9 @@ def cek_status_permohonan():
     original_headers = list(hasil.columns)
     blue_headers = [f"{Fore.BLUE}{h}{Style.RESET_ALL}" for h in original_headers]
 
-    # PERBAIKAN DI SINI: disable_numparse=True
-    # Ini mencegah tabulate mengubah "09.00" menjadi angka 9
     print(tabulate(hasil, headers=blue_headers, tablefmt="rounded_grid", showindex=False, disable_numparse=True))
     
     input(f"\n{Fore.YELLOW}Tekan Enter untuk kembali...{Style.RESET_ALL}")
-
-# ... (main menu dan sisa kode tetap sama)
 
 # MENU USER
 def main_menu():
